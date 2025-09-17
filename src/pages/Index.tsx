@@ -1,7 +1,7 @@
-import CalculusResolver from '@/components/CalculusResolver';
+import MinimalCalculus from '@/components/MinimalCalculus';
 
 const Index = () => {
-  return <CalculusResolver />;
+  return <MinimalCalculus />;
 };
 
 export default Index;

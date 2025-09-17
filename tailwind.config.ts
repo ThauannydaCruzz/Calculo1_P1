@@ -58,13 +58,9 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         // Math theme colors
-        math: {
-          accent: "hsl(var(--math-accent))",
-          secondary: "hsl(var(--math-secondary))",
-          warning: "hsl(var(--math-warning))",
-          surface: "hsl(var(--math-surface))",
-          elevated: "hsl(var(--math-surface-elevated))",
-        },
+        grid: "hsl(var(--grid-color))",
+        axis: "hsl(var(--axis-color))",
+        function: "hsl(var(--function-color))",
       },
       borderRadius: {
         lg: "var(--radius)",
