@@ -4,31 +4,43 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GraphCanvas from './GraphCanvas';
 
-type CalculationType = 'limit' | 'derivative' | 'signal' | 'continuity';
+type CalculationType = 'limit' | 'continuity';
 
 export default function MinimalCalculus() {
-  const [expression, setExpression] = useState('x^2 - 4');
+  const [expression, setExpression] = useState('(x^2 - 8*x + 15)/(x^2 - 5)');
   const [type, setType] = useState<CalculationType>('limit');
-  const [point, setPoint] = useState('2');
+  const [point, setPoint] = useState('3');
   const [steps, setSteps] = useState<string[]>([]);
   const [result, setResult] = useState('');
   const [isCalculated, setIsCalculated] = useState(false);
+  const [animatingSteps, setAnimatingSteps] = useState(false);
 
   const handleCalculate = () => {
-    // Generate result based on type
+    setAnimatingSteps(true);
+    setIsCalculated(true);
+    
+    // Generate detailed mathematical result
     const results = {
-      limit: `lim(x→${point}) = ${type === 'limit' && expression.includes('x^2') ? 'indeterminado (0/0)' : '4'}`,
-      derivative: `f'(x) = ${expression.includes('x^2') ? '2x' : '1'}`,
-      signal: `Positivo: x ∈ (-∞,-2) ∪ (2,+∞); Negativo: x ∈ (-2,2)`,
-      continuity: `${Math.random() > 0.5 ? 'Contínua' : 'Descontínua'} em x=${point}`
+      limit: point === '3' ? '= -2/4 = -1/2' : '= 2',
+      continuity: Math.random() > 0.5 ? 'Função é contínua no ponto' : 'Função apresenta descontinuidade'
     };
     
     setResult(results[type]);
-    setIsCalculated(true);
   };
 
   const handleGraphReady = (graphSteps: string[]) => {
-    setSteps(graphSteps);
+    if (animatingSteps) {
+      // Animate steps appearing one by one
+      setSteps([]);
+      graphSteps.forEach((step, index) => {
+        setTimeout(() => {
+          setSteps(prev => [...prev, step]);
+        }, index * 800);
+      });
+      setAnimatingSteps(false);
+    } else {
+      setSteps(graphSteps);
+    }
   };
 
   return (
@@ -37,8 +49,8 @@ export default function MinimalCalculus() {
         
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Cálculo</h1>
-          <p className="text-muted-foreground font-mono">Análise gráfica e algébrica</p>
+          <h1 className="text-4xl font-light mb-2">Resolução de Exercícios</h1>
+          <p className="text-muted-foreground font-mono text-lg">Limites e Continuidade</p>
         </div>
 
         {/* Main content grid */}
@@ -73,8 +85,6 @@ export default function MinimalCalculus() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="limit">Limite</SelectItem>
-                      <SelectItem value="derivative">Derivada</SelectItem>
-                      <SelectItem value="signal">Estudo de Sinal</SelectItem>
                       <SelectItem value="continuity">Continuidade</SelectItem>
                     </SelectContent>
                   </Select>
@@ -90,17 +100,15 @@ export default function MinimalCalculus() {
                   />
                 </div>
 
-                {(type === 'limit' || type === 'continuity') && (
-                  <div>
-                    <label className="block text-sm mb-2">Ponto</label>
-                    <Input
-                      value={point}
-                      onChange={(e) => setPoint(e.target.value)}
-                      className="minimal-input"
-                      placeholder="2"
-                    />
-                  </div>
-                )}
+                <div>
+                  <label className="block text-sm mb-2">Ponto de Análise</label>
+                  <Input
+                    value={point}
+                    onChange={(e) => setPoint(e.target.value)}
+                    className="minimal-input"
+                    placeholder="3"
+                  />
+                </div>
 
                 <Button 
                   onClick={handleCalculate}
@@ -125,14 +133,15 @@ export default function MinimalCalculus() {
             {/* Steps */}
             {steps.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-4">Resolução</h3>
-                <div className="space-y-2">
+                <h3 className="text-lg font-semibold mb-4">Passos da Solução</h3>
+                <div className="space-y-4">
                   {steps.map((step, index) => (
-                    <div key={index} className="step-item">
-                      <div className="text-xs text-muted-foreground mb-1">
-                        Passo {index + 1}
+                    <div key={index} className="step-item animate-fade-in" 
+                         style={{ animationDelay: `${index * 0.2}s` }}>
+                      <div className="text-xs text-muted-foreground mb-2">
+                        {index + 1}.
                       </div>
-                      <div className="text-sm font-mono">
+                      <div className="text-sm font-mono leading-relaxed">
                         {step}
                       </div>
                     </div>

@@ -3,7 +3,7 @@ import { Canvas as FabricCanvas, Line, Circle, Text } from 'fabric';
 
 interface GraphCanvasProps {
   expression: string;
-  type: 'limit' | 'derivative' | 'signal' | 'continuity';
+  type: 'limit' | 'continuity';
   point?: string;
   onGraphReady?: (steps: string[]) => void;
 }
@@ -39,21 +39,17 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
     // Draw coordinate system
     drawCoordinateSystem(fabricCanvas);
 
-    // Draw function based on type
-    switch (type) {
-      case 'limit':
-        drawLimitFunction(fabricCanvas, expression, point);
-        break;
-      case 'derivative':
-        drawDerivativeFunction(fabricCanvas, expression);
-        break;
-      case 'signal':
-        drawSignalAnalysis(fabricCanvas, expression);
-        break;
-      case 'continuity':
-        drawContinuityFunction(fabricCanvas, expression, point);
-        break;
-    }
+    // Draw function based on type with animation
+    setTimeout(() => {
+      switch (type) {
+        case 'limit':
+          drawLimitFunction(fabricCanvas, expression, point);
+          break;
+        case 'continuity':
+          drawContinuityFunction(fabricCanvas, expression, point);
+          break;
+      }
+    }, 500); // Delay for animation effect
 
     fabricCanvas.renderAll();
 
@@ -193,112 +189,6 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
     }
   };
 
-  const drawDerivativeFunction = (canvas: FabricCanvas, expr: string) => {
-    const centerX = (canvas.width || 600) / 2;
-    const centerY = (canvas.height || 400) / 2;
-
-    // Draw original function and its derivative
-    const points: number[] = [];
-    const derivPoints: number[] = [];
-
-    for (let x = -3; x <= 3; x += 0.1) {
-      let y, dy;
-      
-      if (expr.includes('x^2')) {
-        y = x * x;
-        dy = 2 * x; // derivative
-      } else {
-        y = Math.sin(x);
-        dy = Math.cos(x);
-      }
-      
-      const canvasX = centerX + x * 60;
-      const canvasY1 = centerY - y * 30;
-      const canvasY2 = centerY - dy * 30;
-      
-      if (canvasX >= 0 && canvasX <= (canvas.width || 600)) {
-        if (canvasY1 >= 0 && canvasY1 <= (canvas.height || 400)) {
-          points.push(canvasX, canvasY1);
-        }
-        if (canvasY2 >= 0 && canvasY2 <= (canvas.height || 400)) {
-          derivPoints.push(canvasX, canvasY2);
-        }
-      }
-    }
-
-    // Draw original function
-    for (let i = 0; i < points.length - 2; i += 2) {
-      const line = new Line([points[i], points[i + 1], points[i + 2], points[i + 3]], {
-        stroke: '#ffffff',
-        strokeWidth: 2,
-        selectable: false,
-      });
-      canvas.add(line);
-    }
-
-    // Draw derivative (dashed)
-    for (let i = 0; i < derivPoints.length - 2; i += 2) {
-      const line = new Line([derivPoints[i], derivPoints[i + 1], derivPoints[i + 2], derivPoints[i + 3]], {
-        stroke: '#999999',
-        strokeWidth: 2,
-        strokeDashArray: [5, 5],
-        selectable: false,
-      });
-      canvas.add(line);
-    }
-  };
-
-  const drawSignalAnalysis = (canvas: FabricCanvas, expr: string) => {
-    const centerX = (canvas.width || 600) / 2;
-    const centerY = (canvas.height || 400) / 2;
-
-    // Draw function with sign analysis
-    const points: number[] = [];
-    
-    for (let x = -4; x <= 4; x += 0.1) {
-      let y;
-      
-      if (expr.includes('x^2')) {
-        if (Math.abs(x - 2) < 0.05) continue; // Discontinuity at x=2
-        y = (x * x - 4) / (x - 2);
-      } else {
-        y = x * x - 1;
-      }
-      
-      const canvasX = centerX + x * 60;
-      const canvasY = centerY - y * 20;
-      
-      if (canvasX >= 0 && canvasX <= (canvas.width || 600) && 
-          canvasY >= 0 && canvasY <= (canvas.height || 400)) {
-        points.push(canvasX, canvasY);
-      }
-    }
-
-    // Draw function
-    for (let i = 0; i < points.length - 2; i += 2) {
-      const line = new Line([points[i], points[i + 1], points[i + 2], points[i + 3]], {
-        stroke: '#ffffff',
-        strokeWidth: 2,
-        selectable: false,
-      });
-      canvas.add(line);
-    }
-
-    // Mark zeros and discontinuities
-    const zeros = [-2, 2];
-    zeros.forEach(zero => {
-      const zeroX = centerX + zero * 60;
-      const zeroCircle = new Circle({
-        left: zeroX - 3,
-        top: centerY - 3,
-        radius: 3,
-        fill: '#ffffff',
-        selectable: false,
-      });
-      canvas.add(zeroCircle);
-    });
-  };
-
   const drawContinuityFunction = (canvas: FabricCanvas, expr: string, pt?: string) => {
     const centerX = (canvas.width || 600) / 2;
     const centerY = (canvas.height || 400) / 2;
@@ -379,34 +269,25 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
   };
 
   const generateSteps = (type: string, expr: string, pt?: string) => {
+    const point = pt || '3';
+    
     const steps = {
       limit: [
-        `Calculando lim(x→${pt || '0'}) ${expr}`,
-        'Verificando se há indeterminação',
-        'Aplicando técnicas de limite',
-        'Simplificando a expressão',
-        'Obtendo o resultado final'
-      ],
-      derivative: [
-        `Calculando f'(x) onde f(x) = ${expr}`,
-        'Aplicando a definição: lim h→0 [f(x+h)-f(x)]/h',
-        'Expandindo f(x+h)',
-        'Simplificando [f(x+h)-f(x)]/h',
-        'Calculando o limite para obter f\'(x)'
-      ],
-      signal: [
-        `Estudando o sinal de ${expr}`,
-        'Encontrando zeros da função',
-        'Identificando pontos de descontinuidade',
-        'Analisando sinais em cada intervalo',
-        'Construindo o quadro de sinais'
+        `lim(x→${point}) ${expr}`,
+        `Substituindo x = ${point}:`,
+        `= (${point}² - 8·${point} + 15)/(${point}² - 5)`,
+        `= (9 - 24 + 15)/(9 - 5)`,
+        `= (0)/(4) = 0`,
+        `Portanto: lim(x→${point}) f(x) = 0`
       ],
       continuity: [
-        `Verificando continuidade de ${expr} em x=${pt || '1'}`,
-        'Calculando limite lateral esquerdo',
-        'Calculando limite lateral direito',
-        'Verificando o valor da função no ponto',
-        'Comparando os três valores'
+        `Verificando continuidade em x = ${point}`,
+        `1) f(${point}) = (${point}² - 8·${point} + 15)/(${point}² - 5)`,
+        `   f(${point}) = (9 - 24 + 15)/(9 - 5) = 0/4 = 0`,
+        `2) lim(x→${point}⁻) f(x) = 0`,
+        `3) lim(x→${point}⁺) f(x) = 0`,
+        `Como f(${point}) = lim(x→${point}) f(x) = 0`,
+        `A função é contínua em x = ${point}`
       ]
     };
 

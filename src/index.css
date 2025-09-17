@@ -120,23 +120,52 @@ All colors MUST be HSL.
 }
 
 @layer components {
-  /* Minimal canvas container */
+  /* Enhanced canvas container with animation */
   .graph-container {
-    @apply border border-border bg-card;
+    @apply border border-border bg-card rounded-lg overflow-hidden;
     min-height: 400px;
+    position: relative;
+  }
+  
+  .graph-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 49%, rgba(255,255,255,0.05) 50%, transparent 51%);
+    animation: graphScan 2s ease-in-out;
+    pointer-events: none;
+    z-index: 1;
   }
   
   /* Clean input styling */
   .minimal-input {
-    @apply bg-transparent border-b border-border px-0 py-2 text-lg font-mono;
-    @apply focus:border-foreground focus:outline-none transition-colors;
+    @apply bg-transparent border-0 border-b border-border px-0 py-3 text-lg font-mono;
+    @apply focus:border-foreground focus:outline-none transition-all duration-300;
+    border-radius: 0;
   }
   
-  /* Step styling */
+  /* Enhanced step styling with animations */
   .step-item {
-    @apply border-l-2 border-border pl-4 py-2;
-    @apply hover:border-foreground transition-colors;
+    @apply border-l-2 border-border pl-6 py-4 bg-card/50;
+    @apply hover:bg-card/70 hover:border-foreground transition-all duration-300;
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: slideInLeft 0.6s ease-out forwards;
   }
 }
 
-/* Remove previous animations and keep it minimal */
+/* Animation keyframes */
+@keyframes slideInLeft {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes graphScan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
