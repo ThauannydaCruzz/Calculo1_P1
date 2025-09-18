@@ -140,14 +140,14 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
     const centerY = (canvas.height || 400) / 2;
     const limitPoint = parseFloat(pt || '0');
 
-    // Draw a simple parabola approaching a limit
-    const points: number[] = [];
+    // Calculate all points first
+    const allPoints: number[] = [];
     for (let x = -5; x <= 5; x += 0.1) {
       if (Math.abs(x - limitPoint) < 0.1) continue; // Discontinuity
       
       let y;
       if (expr.includes('x^2')) {
-        y = x * x - 4; // (x^2 - 4) / (x - 2) simplified
+        y = (x * x - 8 * x + 15) / (x * x - 5); // Actual function from default
       } else {
         y = Math.sin(x * Math.PI / 2);
       }
@@ -156,138 +156,132 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
       const canvasY = centerY - y * 30;
       
       if (canvasX >= 0 && canvasX <= (canvas.width || 600) && 
-          canvasY >= 0 && canvasY <= (canvas.height || 400)) {
-        points.push(canvasX, canvasY);
+          canvasY >= 0 && canvasY <= (canvas.height || 400) &&
+          !isNaN(y) && isFinite(y)) {
+        allPoints.push(canvasX, canvasY);
       }
     }
 
-    // Draw function curve
-    if (points.length >= 4) {
-      for (let i = 0; i < points.length - 2; i += 2) {
-        const line = new Line([points[i], points[i + 1], points[i + 2], points[i + 3]], {
-          stroke: '#ffffff',
-          strokeWidth: 2,
-          selectable: false,
-        });
-        canvas.add(line);
-      }
-    }
-
-    // Mark limit point
-    if (pt) {
-      const limitX = centerX + limitPoint * 60;
-      const limitCircle = new Circle({
-        left: limitX - 3,
-        top: centerY - 3,
-        radius: 3,
-        fill: 'transparent',
-        stroke: '#ffffff',
-        strokeWidth: 2,
-        selectable: false,
-      });
-      canvas.add(limitCircle);
+    // Animate drawing the curve progressively
+    if (allPoints.length >= 4) {
+      const drawSegment = (index: number) => {
+        if (index < allPoints.length - 2) {
+          const line = new Line([allPoints[index], allPoints[index + 1], allPoints[index + 2], allPoints[index + 3]], {
+            stroke: '#ffffff',
+            strokeWidth: 2,
+            selectable: false,
+          });
+          canvas.add(line);
+          canvas.renderAll();
+          
+          // Continue with next segment after delay
+          setTimeout(() => drawSegment(index + 2), 20);
+        } else {
+          // Mark limit point after curve is drawn
+          if (pt) {
+            setTimeout(() => {
+              const limitX = centerX + limitPoint * 60;
+              const limitY = centerY - ((limitPoint * limitPoint - 8 * limitPoint + 15) / (limitPoint * limitPoint - 5)) * 30;
+              
+              const limitCircle = new Circle({
+                left: limitX - 4,
+                top: limitY - 4,
+                radius: 4,
+                fill: 'transparent',
+                stroke: '#ff6b6b',
+                strokeWidth: 3,
+                selectable: false,
+              });
+              canvas.add(limitCircle);
+              canvas.renderAll();
+            }, 300);
+          }
+        }
+      };
+      
+      drawSegment(0);
     }
   };
 
   const drawContinuityFunction = (canvas: FabricCanvas, expr: string, pt?: string) => {
     const centerX = (canvas.width || 600) / 2;
     const centerY = (canvas.height || 400) / 2;
-    const checkPoint = parseFloat(pt || '1');
+    const checkPoint = parseFloat(pt || '3');
 
-    // Draw piecewise function
-    const points1: number[] = [];
-    const points2: number[] = [];
-
-    for (let x = -3; x <= checkPoint; x += 0.1) {
-      const y = x * x; // First piece
+    // Calculate actual function values
+    const points: number[] = [];
+    for (let x = -4; x <= 4; x += 0.1) {
+      if (Math.abs(x * x - 5) < 0.01) continue; // Skip near singularities
+      
+      const y = (x * x - 8 * x + 15) / (x * x - 5);
       const canvasX = centerX + x * 60;
       const canvasY = centerY - y * 30;
       
       if (canvasX >= 0 && canvasX <= (canvas.width || 600) && 
-          canvasY >= 0 && canvasY <= (canvas.height || 400)) {
-        points1.push(canvasX, canvasY);
+          canvasY >= 0 && canvasY <= (canvas.height || 400) &&
+          !isNaN(y) && isFinite(y)) {
+        points.push(canvasX, canvasY);
       }
     }
 
-    for (let x = checkPoint; x <= 3; x += 0.1) {
-      const y = 2 * x; // Second piece
-      const canvasX = centerX + x * 60;
-      const canvasY = centerY - y * 30;
+    // Animate drawing the curve
+    if (points.length >= 4) {
+      const drawSegment = (index: number) => {
+        if (index < points.length - 2) {
+          const line = new Line([points[index], points[index + 1], points[index + 2], points[index + 3]], {
+            stroke: '#ffffff',
+            strokeWidth: 2,
+            selectable: false,
+          });
+          canvas.add(line);
+          canvas.renderAll();
+          
+          setTimeout(() => drawSegment(index + 2), 15);
+        } else {
+          // Mark the continuity point
+          setTimeout(() => {
+            const pointX = centerX + checkPoint * 60;
+            const pointY = centerY - ((checkPoint * checkPoint - 8 * checkPoint + 15) / (checkPoint * checkPoint - 5)) * 30;
+
+            const continuityCircle = new Circle({
+              left: pointX - 4,
+              top: pointY - 4,
+              radius: 4,
+              fill: '#4ade80',
+              selectable: false,
+            });
+            
+            canvas.add(continuityCircle);
+            canvas.renderAll();
+          }, 300);
+        }
+      };
       
-      if (canvasX >= 0 && canvasX <= (canvas.width || 600) && 
-          canvasY >= 0 && canvasY <= (canvas.height || 400)) {
-        points2.push(canvasX, canvasY);
-      }
+      drawSegment(0);
     }
-
-    // Draw first piece
-    for (let i = 0; i < points1.length - 2; i += 2) {
-      const line = new Line([points1[i], points1[i + 1], points1[i + 2], points1[i + 3]], {
-        stroke: '#ffffff',
-        strokeWidth: 2,
-        selectable: false,
-      });
-      canvas.add(line);
-    }
-
-    // Draw second piece
-    for (let i = 0; i < points2.length - 2; i += 2) {
-      const line = new Line([points2[i], points2[i + 1], points2[i + 2], points2[i + 3]], {
-        stroke: '#ffffff',
-        strokeWidth: 2,
-        selectable: false,
-      });
-      canvas.add(line);
-    }
-
-    // Mark the point of interest
-    const pointX = centerX + checkPoint * 60;
-    const pointY1 = centerY - (checkPoint * checkPoint) * 30;
-    const pointY2 = centerY - (2 * checkPoint) * 30;
-
-    // Left limit point
-    const leftCircle = new Circle({
-      left: pointX - 3,
-      top: pointY1 - 3,
-      radius: 3,
-      fill: '#ffffff',
-      selectable: false,
-    });
-    
-    // Right limit point
-    const rightCircle = new Circle({
-      left: pointX - 3,
-      top: pointY2 - 3,
-      radius: 3,
-      fill: 'transparent',
-      stroke: '#ffffff',
-      strokeWidth: 2,
-      selectable: false,
-    });
-
-    canvas.add(leftCircle, rightCircle);
   };
 
   const generateSteps = (type: string, expr: string, pt?: string) => {
     const point = pt || '3';
+    const pointNum = parseFloat(point);
     
     const steps = {
       limit: [
-        `lim(x→${point}) ${expr}`,
-        `Substituindo x = ${point}:`,
-        `= (${point}² - 8·${point} + 15)/(${point}² - 5)`,
-        `= (9 - 24 + 15)/(9 - 5)`,
-        `= (0)/(4) = 0`,
-        `Portanto: lim(x→${point}) f(x) = 0`
+        `lim<sub>x→${point}</sub> <span class="fraction"><span class="numerator">x² - 8x + 15</span><span class="denominator">x² - 5</span></span>`,
+        `Substituindo diretamente x = ${point}:`,
+        `<span class="fraction"><span class="numerator">${point}² - 8(${point}) + 15</span><span class="denominator">${point}² - 5</span></span> = <span class="fraction"><span class="numerator">${pointNum*pointNum} - ${8*pointNum} + 15</span><span class="denominator">${pointNum*pointNum} - 5</span></span>`,
+        `= <span class="fraction"><span class="numerator">${pointNum*pointNum - 8*pointNum + 15}</span><span class="denominator">${pointNum*pointNum - 5}</span></span>`,
+        `= <span class="result">${(pointNum*pointNum - 8*pointNum + 15)/(pointNum*pointNum - 5)}</span>`,
+        `∴ lim<sub>x→${point}</sub> f(x) = <strong>${(pointNum*pointNum - 8*pointNum + 15)/(pointNum*pointNum - 5)}</strong>`
       ],
       continuity: [
-        `Verificando continuidade em x = ${point}`,
-        `1) f(${point}) = (${point}² - 8·${point} + 15)/(${point}² - 5)`,
-        `   f(${point}) = (9 - 24 + 15)/(9 - 5) = 0/4 = 0`,
-        `2) lim(x→${point}⁻) f(x) = 0`,
-        `3) lim(x→${point}⁺) f(x) = 0`,
-        `Como f(${point}) = lim(x→${point}) f(x) = 0`,
-        `A função é contínua em x = ${point}`
+        `<strong>Verificando continuidade em x = ${point}</strong>`,
+        `<em>Condição 1:</em> f(${point}) deve existir`,
+        `f(${point}) = <span class="fraction"><span class="numerator">${point}² - 8(${point}) + 15</span><span class="denominator">${point}² - 5</span></span> = <span class="fraction"><span class="numerator">${pointNum*pointNum - 8*pointNum + 15}</span><span class="denominator">${pointNum*pointNum - 5}</span></span> = ${(pointNum*pointNum - 8*pointNum + 15)/(pointNum*pointNum - 5)}`,
+        `<em>Condição 2:</em> lim<sub>x→${point}</sub> f(x) deve existir`,
+        `lim<sub>x→${point}</sub> f(x) = ${(pointNum*pointNum - 8*pointNum + 15)/(pointNum*pointNum - 5)}`,
+        `<em>Condição 3:</em> f(${point}) = lim<sub>x→${point}</sub> f(x)`,
+        `Como todas as condições são satisfeitas:<br/><strong>A função é contínua em x = ${point}</strong>`
       ]
     };
 

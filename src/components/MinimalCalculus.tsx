@@ -135,17 +135,17 @@ export default function MinimalCalculus() {
               <div>
                 <h3 className="text-lg font-semibold mb-4">Passos da Solução</h3>
                 <div className="space-y-4">
-                  {steps.map((step, index) => (
-                    <div key={index} className="step-item animate-fade-in" 
-                         style={{ animationDelay: `${index * 0.2}s` }}>
-                      <div className="text-xs text-muted-foreground mb-2">
-                        {index + 1}.
-                      </div>
-                      <div className="text-sm font-mono leading-relaxed">
-                        {step}
-                      </div>
-                    </div>
-                  ))}
+            {steps.map((step, index) => (
+              <div key={index} className="step-item animate-fade-in p-3 border-l border-border" 
+                   style={{ animationDelay: `${index * 0.2}s` }}>
+                <div className="text-xs text-muted-foreground mb-2 font-medium">
+                  Passo {index + 1}
+                </div>
+                <div className="text-base font-mono leading-relaxed math-expression">
+                  <div dangerouslySetInnerHTML={{ __html: step }} />
+                </div>
+              </div>
+            ))}
                 </div>
               </div>
             )}
