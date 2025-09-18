@@ -167,8 +167,7 @@ export default function MinimalCalculus() {
         {/* Footer */}
         <footer className="text-center text-sm text-muted-foreground border-t border-border pt-4">
           <p>CÁLCULO DIFERENCIAL E INTEGRAL 04C-2025/2</p>
-          <p className="mt-1">by Thauanny da Cruz, Ana Julia Romera, Sophia Mattos e Gabriela Akemi</p>
-          <p className="text-xs mt-1">(em ordem alfabética)</p>
+          <p className="mt-1">by Ana Julia Romera, Gabriela Akemi, Sophia Mattos e Thauanny da Cruz</p>
         </footer>
       </div>
     </div>
