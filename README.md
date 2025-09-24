@@ -1,73 +1,76 @@
-# Welcome to your Lovable project
+#  Calculadora de Limites
+<br>
+<p align="center">
+  <img src="./src/assets/logo.svg" alt="Logo" width="80" height="80">
+</p>
 
-## Project info
+<h3 align="center">Calculadora de Limites</h3>
+<p align="center">
+  Um projeto para a disciplina de Cálculo Diferencial e Integral que calcula limites de funções de forma passo a passo e exibe sua representação gráfica.
+  <br>
+</p>
 
-**URL**: https://lovable.dev/projects/64a26497-89a5-4181-8f88-4f0c822c67c3
+## 📋 Sumário
 
-## How can I edit this code?
+- [Sobre o Projeto](#-sobre-o-projeto)
+- [✨ Funcionalidades](#-funcionalidades)
+- [💻 Tecnologias Utilizadas](#-tecnologias-utilizadas)
+- [🚀 Como Executar o Projeto](#-como-executar-o-projeto)
+- [🤝 Como Contribuir](#-como-contribuir)
+- [👥 Autores](#-autores)
 
-There are several ways of editing your application.
+## 📖 Sobre o Projeto
 
-**Use Lovable**
+Este projeto é uma **Calculadora de Limites** desenvolvida para a disciplina de **Cálculo Diferencial e Integral (04C-2025/2)**.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/64a26497-89a5-4181-8f88-4f0c822c67c3) and start prompting.
+A aplicação permite ao usuário inserir uma função `f(x)`, um ponto de análise e visualizar a solução detalhada do limite, com todos os passos da resolução, além de apresentar o gráfico da função para uma melhor compreensão visual.
 
-Changes made via Lovable will be committed automatically to this repo.
+![Demonstração da Calculadora de Limites](link_para_sua_imagem_ou_gif_aqui.png)
+*(Dica: Grave um GIF da tela ou tire um print e substitua o link acima para mostrar seu projeto!)*
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## ✨ Funcionalidades
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+-   **Tipos de Análise:** Calcula Limites, continuidade e estudo de sinal.
+-   **Entrada de Dados:** Permite inserir a função `f(x)` e o ponto de análise.
+-   **Resolução Passo a Passo:** Exibe cada etapa da solução do cálculo do limite.
+-   **Representação Gráfica:** Plota o gráfico da função para análise visual.
+-   **Informações Adicionais:** Mostra a função original, sua derivada (ou função auxiliar) e pontos importantes.
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 💻 Tecnologias Utilizadas
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Este projeto foi construído com as seguintes tecnologias:
 
-# Step 3: Install the necessary dependencies.
+-   **[Vite](https://vitejs.dev/)**
+-   **[React](https://reactjs.org/)**
+-   **[TypeScript](https://www.typescriptlang.org/)**
+-   **[Tailwind CSS](https://tailwindcss.com/)**
+-   **[shadcn-ui](https://ui.shadcn.com/)**
+
+---
+
+## 🚀 Como Executar o Projeto
+
+Siga os passos abaixo para rodar o projeto em seu ambiente local.
+
+### Pré-requisitos
+
+Antes de começar, você vai precisar ter instalado em sua máquina o [Node.js](https://nodejs.org/en/) e o npm. É recomendado o uso do [nvm (Node Version Manager)](https://github.com/nvm-sh/nvm) para gerenciar as versões.
+
+### Rodando o Projeto
+
+```bash
+# 1. Clone o repositório
+git clone [https://github.com/ThauannydaCruzz/Calculo1_P1.git](https://github.com/ThauannydaCruzz/Calculo1_P1.git)
+
+# 2. Navegue até o diretório do projeto
+cd Calculo1_P1
+
+# 3. Instale as dependências necessárias
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 4. Inicie o servidor de desenvolvimento
 npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/64a26497-89a5-4181-8f88-4f0c822c67c3) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
