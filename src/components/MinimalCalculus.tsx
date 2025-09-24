@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GraphCanvas from './GraphCanvas';
 
-type CalculationType = 'limit' | 'continuity';
+type CalculationType = 'limit' | 'continuity' | 'sinais';
 
 export default function MinimalCalculus() {
   const [expression, setExpression] = useState('(x^2 - 8*x + 15)/(x^2 - 5)');
@@ -22,7 +22,8 @@ export default function MinimalCalculus() {
     // Generate detailed mathematical result
     const results = {
       limit: point === '3' ? '= -2/4 = -1/2' : '= 2',
-      continuity: Math.random() > 0.5 ? 'Função é contínua no ponto' : 'Função apresenta descontinuidade'
+      continuity: Math.random() > 0.5 ? 'Função é contínua no ponto' : 'Função apresenta descontinuidade',
+      sinais: 'f(x) > 0 quando x ∈ (-∞, 3) ∪ (5, ∞) e f(x) < 0 quando x ∈ (3, 5)'
     };
     
     setResult(results[type]);
@@ -64,6 +65,7 @@ export default function MinimalCalculus() {
                 <SelectContent>
                   <SelectItem value="limit">Limite</SelectItem>
                   <SelectItem value="continuity">Continuidade</SelectItem>
+                  <SelectItem value="sinais">Estudo de Sinais</SelectItem>
                 </SelectContent>
               </Select>
             </div>

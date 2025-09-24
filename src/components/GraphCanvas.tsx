@@ -3,7 +3,7 @@ import { Canvas as FabricCanvas, Line, Circle, Text } from 'fabric';
 
 interface GraphCanvasProps {
   expression: string;
-  type: 'limit' | 'continuity';
+  type: 'limit' | 'continuity' | 'sinais';
   point?: string;
   onGraphReady?: (steps: string[]) => void;
 }
@@ -47,6 +47,9 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
           break;
         case 'continuity':
           drawContinuityFunction(fabricCanvas, expression, point);
+          break;
+        case 'sinais':
+          drawSinaisFunction(fabricCanvas, expression, point);
           break;
       }
     }, 500); // Delay for animation effect
@@ -255,6 +258,65 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
             canvas.renderAll();
           }, 300);
         }
+  };
+
+  const drawSinaisFunction = (canvas: FabricCanvas, expr: string, pt?: string) => {
+    const centerX = (canvas.width || 600) / 2;
+    const centerY = (canvas.height || 400) / 2;
+
+    // Calculate function values for sign study
+    const points: number[] = [];
+    for (let x = -4; x <= 4; x += 0.1) {
+      let y;
+      if (expr.includes('x^2')) {
+        y = (x * x - 8 * x + 15) / (x * x - 5);
+      } else {
+        y = Math.sin(x * Math.PI / 2);
+      }
+      
+      const canvasX = centerX + x * 60;
+      const canvasY = centerY - y * 30;
+      
+      if (canvasX >= 0 && canvasX <= (canvas.width || 600) && 
+          canvasY >= 0 && canvasY <= (canvas.height || 400) &&
+          !isNaN(y) && isFinite(y)) {
+        points.push(canvasX, canvasY);
+      }
+    }
+
+    // Draw function curve
+    if (points.length >= 4) {
+      const drawSegment = (index: number) => {
+        if (index < points.length - 2) {
+          const line = new Line([points[index], points[index + 1], points[index + 2], points[index + 3]], {
+            stroke: '#ffffff',
+            strokeWidth: 2,
+            selectable: false,
+          });
+          canvas.add(line);
+          canvas.renderAll();
+          
+          setTimeout(() => drawSegment(index + 2), 15);
+        } else {
+          // Mark zeros and critical points
+          setTimeout(() => {
+            const zeros = [3, 5]; // Example zeros for the default function
+            zeros.forEach((zero, index) => {
+              setTimeout(() => {
+                const zeroX = centerX + zero * 60;
+                const zeroCircle = new Circle({
+                  left: zeroX - 4,
+                  top: centerY - 4,
+                  radius: 4,
+                  fill: '#fbbf24',
+                  selectable: false,
+                });
+                canvas.add(zeroCircle);
+                canvas.renderAll();
+              }, index * 200);
+            });
+          }, 300);
+        }
       };
       
       drawSegment(0);
@@ -282,6 +344,15 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
         `lim<sub>x→${point}</sub> f(x) = ${(pointNum*pointNum - 8*pointNum + 15)/(pointNum*pointNum - 5)}`,
         `<em>Condição 3:</em> f(${point}) = lim<sub>x→${point}</sub> f(x)`,
         `Como todas as condições são satisfeitas:<br/><strong>A função é contínua em x = ${point}</strong>`
+      ],
+      sinais: [
+        `<strong>Estudo do sinal de f(x) = <span class="fraction"><span class="numerator">x² - 8x + 15</span><span class="denominator">x² - 5</span></span></strong>`,
+        `<em>Passo 1:</em> Encontrar os zeros do numerador: x² - 8x + 15 = 0`,
+        `Usando a fórmula quadrática: x = (8 ± √(64-60))/2 = (8 ± 2)/2`,
+        `Zeros: x = 3 e x = 5`,
+        `<em>Passo 2:</em> Encontrar os zeros do denominador: x² - 5 = 0`,
+        `x = ±√5 ≈ ±2.24 (pontos de descontinuidade)`,
+        `<strong>Conclusão:</strong> f(x) > 0 quando x ∈ (-∞, -√5) ∪ (3, √5) ∪ (5, +∞)<br/>f(x) < 0 quando x ∈ (-√5, 3) ∪ (√5, 5)`
       ]
     };
 
