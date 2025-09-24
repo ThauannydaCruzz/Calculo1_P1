@@ -258,6 +258,10 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
             canvas.renderAll();
           }, 300);
         }
+      };
+      
+      drawSegment(0);
+    }
   };
 
   const drawSinaisFunction = (canvas: FabricCanvas, expr: string, pt?: string) => {
