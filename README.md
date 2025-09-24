@@ -1,10 +1,6 @@
 #  Calculadora de Limites
 <br>
-<p align="center">
-  <img src="./src/assets/logo.svg" alt="Logo" width="80" height="80">
-</p>
 
-<h3 align="center">Calculadora de Limites</h3>
 <p align="center">
   Um projeto para a disciplina de Cálculo Diferencial e Integral que calcula limites de funções de forma passo a passo e exibe sua representação gráfica.
   <br>
