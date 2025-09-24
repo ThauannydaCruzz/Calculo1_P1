@@ -11,13 +11,30 @@ interface GraphCanvasProps {
 export default function GraphCanvas({ expression, type, point, onGraphReady }: GraphCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 600, height: 400 });
+
+  useEffect(() => {
+    const updateCanvasSize = () => {
+      if (window.innerWidth < 640) { // sm breakpoint
+        setCanvasSize({ width: Math.min(window.innerWidth - 32, 400), height: 300 });
+      } else if (window.innerWidth < 1024) { // lg breakpoint  
+        setCanvasSize({ width: Math.min(window.innerWidth - 64, 500), height: 350 });
+      } else {
+        setCanvasSize({ width: 600, height: 400 });
+      }
+    };
+
+    updateCanvasSize();
+    window.addEventListener('resize', updateCanvasSize);
+    return () => window.removeEventListener('resize', updateCanvasSize);
+  }, []);
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
     const canvas = new FabricCanvas(canvasRef.current, {
-      width: 600,
-      height: 400,
+      width: canvasSize.width,
+      height: canvasSize.height,
       backgroundColor: '#000000',
       selection: false,
     });
@@ -27,7 +44,7 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
     return () => {
       canvas.dispose();
     };
-  }, []);
+  }, [canvasSize]);
 
   useEffect(() => {
     if (!fabricCanvas || !expression) return;
@@ -61,17 +78,18 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
   }, [fabricCanvas, expression, type, point]);
 
   const drawCoordinateSystem = (canvas: FabricCanvas) => {
-    const width = canvas.width || 600;
-    const height = canvas.height || 400;
+    const width = canvas.width || canvasSize.width;
+    const height = canvas.height || canvasSize.height;
     const centerX = width / 2;
     const centerY = height / 2;
+    const gridSpacing = Math.min(width, height) / 20; // Responsive grid spacing
 
     // Grid lines
     for (let i = -10; i <= 10; i++) {
       if (i === 0) continue;
       
       // Vertical grid lines
-      const x = centerX + i * 30;
+      const x = centerX + i * gridSpacing;
       if (x > 0 && x < width) {
         const vLine = new Line([x, 0, x, height], {
           stroke: '#333333',
@@ -82,7 +100,7 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
       }
 
       // Horizontal grid lines
-      const y = centerY - i * 30;
+      const y = centerY - i * gridSpacing;
       if (y > 0 && y < height) {
         const hLine = new Line([0, y, width, y], {
           stroke: '#333333',
@@ -107,18 +125,21 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
 
     canvas.add(xAxis, yAxis);
 
-    // Axis labels
+    // Axis labels - responsive font size
+    const fontSize = Math.max(10, Math.min(12, width / 50));
+    const labelSpacing = gridSpacing * 2;
+    
     for (let i = -5; i <= 5; i++) {
       if (i === 0) continue;
       
-      const x = centerX + i * 60;
-      const y = centerY - i * 60;
+      const x = centerX + i * labelSpacing;
+      const y = centerY - i * labelSpacing;
       
       if (x > 20 && x < width - 20) {
         const xLabel = new Text(i.toString(), {
           left: x - 5,
-          top: centerY + 10,
-          fontSize: 12,
+          top: centerY + 5,
+          fontSize: fontSize,
           fill: '#ffffff',
           selectable: false,
         });
@@ -127,9 +148,9 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
       
       if (y > 20 && y < height - 20) {
         const yLabel = new Text(i.toString(), {
-          left: centerX + 10,
-          top: y - 8,
-          fontSize: 12,
+          left: centerX + 5,
+          top: y - fontSize/2,
+          fontSize: fontSize,
           fill: '#ffffff',
           selectable: false,
         });
@@ -139,9 +160,12 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
   };
 
   const drawLimitFunction = (canvas: FabricCanvas, expr: string, pt?: string) => {
-    const centerX = (canvas.width || 600) / 2;
-    const centerY = (canvas.height || 400) / 2;
+    const width = canvas.width || canvasSize.width;
+    const height = canvas.height || canvasSize.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
     const limitPoint = parseFloat(pt || '0');
+    const scale = Math.min(width, height) / 20; // Responsive scaling
 
     // Calculate all points first
     const allPoints: number[] = [];
@@ -155,11 +179,11 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
         y = Math.sin(x * Math.PI / 2);
       }
       
-      const canvasX = centerX + x * 60;
-      const canvasY = centerY - y * 30;
+      const canvasX = centerX + x * scale;
+      const canvasY = centerY - y * scale * 0.5;
       
-      if (canvasX >= 0 && canvasX <= (canvas.width || 600) && 
-          canvasY >= 0 && canvasY <= (canvas.height || 400) &&
+      if (canvasX >= 0 && canvasX <= width && 
+          canvasY >= 0 && canvasY <= height &&
           !isNaN(y) && isFinite(y)) {
         allPoints.push(canvasX, canvasY);
       }
@@ -171,7 +195,7 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
         if (index < allPoints.length - 2) {
           const line = new Line([allPoints[index], allPoints[index + 1], allPoints[index + 2], allPoints[index + 3]], {
             stroke: '#ffffff',
-            strokeWidth: 2,
+            strokeWidth: Math.max(1, Math.min(2, width / 300)),
             selectable: false,
           });
           canvas.add(line);
@@ -183,16 +207,17 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
           // Mark limit point after curve is drawn
           if (pt) {
             setTimeout(() => {
-              const limitX = centerX + limitPoint * 60;
-              const limitY = centerY - ((limitPoint * limitPoint - 8 * limitPoint + 15) / (limitPoint * limitPoint - 5)) * 30;
+              const limitX = centerX + limitPoint * scale;
+              const limitY = centerY - ((limitPoint * limitPoint - 8 * limitPoint + 15) / (limitPoint * limitPoint - 5)) * scale * 0.5;
+              const radius = Math.max(3, Math.min(5, width / 120));
               
               const limitCircle = new Circle({
-                left: limitX - 4,
-                top: limitY - 4,
-                radius: 4,
+                left: limitX - radius,
+                top: limitY - radius,
+                radius: radius,
                 fill: 'transparent',
                 stroke: '#ff6b6b',
-                strokeWidth: 3,
+                strokeWidth: Math.max(2, Math.min(3, width / 200)),
                 selectable: false,
               });
               canvas.add(limitCircle);
@@ -207,9 +232,12 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
   };
 
   const drawContinuityFunction = (canvas: FabricCanvas, expr: string, pt?: string) => {
-    const centerX = (canvas.width || 600) / 2;
-    const centerY = (canvas.height || 400) / 2;
+    const width = canvas.width || canvasSize.width;
+    const height = canvas.height || canvasSize.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
     const checkPoint = parseFloat(pt || '3');
+    const scale = Math.min(width, height) / 20; // Responsive scaling
 
     // Calculate actual function values
     const points: number[] = [];
@@ -217,11 +245,11 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
       if (Math.abs(x * x - 5) < 0.01) continue; // Skip near singularities
       
       const y = (x * x - 8 * x + 15) / (x * x - 5);
-      const canvasX = centerX + x * 60;
-      const canvasY = centerY - y * 30;
+      const canvasX = centerX + x * scale;
+      const canvasY = centerY - y * scale * 0.5;
       
-      if (canvasX >= 0 && canvasX <= (canvas.width || 600) && 
-          canvasY >= 0 && canvasY <= (canvas.height || 400) &&
+      if (canvasX >= 0 && canvasX <= width && 
+          canvasY >= 0 && canvasY <= height &&
           !isNaN(y) && isFinite(y)) {
         points.push(canvasX, canvasY);
       }
@@ -233,7 +261,7 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
         if (index < points.length - 2) {
           const line = new Line([points[index], points[index + 1], points[index + 2], points[index + 3]], {
             stroke: '#ffffff',
-            strokeWidth: 2,
+            strokeWidth: Math.max(1, Math.min(2, width / 300)),
             selectable: false,
           });
           canvas.add(line);
@@ -243,13 +271,14 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
         } else {
           // Mark the continuity point
           setTimeout(() => {
-            const pointX = centerX + checkPoint * 60;
-            const pointY = centerY - ((checkPoint * checkPoint - 8 * checkPoint + 15) / (checkPoint * checkPoint - 5)) * 30;
+            const pointX = centerX + checkPoint * scale;
+            const pointY = centerY - ((checkPoint * checkPoint - 8 * checkPoint + 15) / (checkPoint * checkPoint - 5)) * scale * 0.5;
+            const radius = Math.max(3, Math.min(5, width / 120));
 
             const continuityCircle = new Circle({
-              left: pointX - 4,
-              top: pointY - 4,
-              radius: 4,
+              left: pointX - radius,
+              top: pointY - radius,
+              radius: radius,
               fill: '#4ade80',
               selectable: false,
             });
@@ -265,8 +294,11 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
   };
 
   const drawSinaisFunction = (canvas: FabricCanvas, expr: string, pt?: string) => {
-    const centerX = (canvas.width || 600) / 2;
-    const centerY = (canvas.height || 400) / 2;
+    const width = canvas.width || canvasSize.width;
+    const height = canvas.height || canvasSize.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const scale = Math.min(width, height) / 20; // Responsive scaling
 
     // Calculate function values for sign study
     const points: number[] = [];
@@ -278,11 +310,11 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
         y = Math.sin(x * Math.PI / 2);
       }
       
-      const canvasX = centerX + x * 60;
-      const canvasY = centerY - y * 30;
+      const canvasX = centerX + x * scale;
+      const canvasY = centerY - y * scale * 0.5;
       
-      if (canvasX >= 0 && canvasX <= (canvas.width || 600) && 
-          canvasY >= 0 && canvasY <= (canvas.height || 400) &&
+      if (canvasX >= 0 && canvasX <= width && 
+          canvasY >= 0 && canvasY <= height &&
           !isNaN(y) && isFinite(y)) {
         points.push(canvasX, canvasY);
       }
@@ -294,7 +326,7 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
         if (index < points.length - 2) {
           const line = new Line([points[index], points[index + 1], points[index + 2], points[index + 3]], {
             stroke: '#ffffff',
-            strokeWidth: 2,
+            strokeWidth: Math.max(1, Math.min(2, width / 300)),
             selectable: false,
           });
           canvas.add(line);
@@ -307,11 +339,12 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
             const zeros = [3, 5]; // Example zeros for the default function
             zeros.forEach((zero, index) => {
               setTimeout(() => {
-                const zeroX = centerX + zero * 60;
+                const zeroX = centerX + zero * scale;
+                const radius = Math.max(3, Math.min(5, width / 120));
                 const zeroCircle = new Circle({
-                  left: zeroX - 4,
-                  top: centerY - 4,
-                  radius: 4,
+                  left: zeroX - radius,
+                  top: centerY - radius,
+                  radius: radius,
                   fill: '#fbbf24',
                   selectable: false,
                 });
@@ -364,8 +397,10 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
   };
 
   return (
-    <div className="graph-container">
-      <canvas ref={canvasRef} className="w-full" />
+    <div className="graph-container w-full">
+      <div className="w-full overflow-hidden rounded-lg bg-black">
+        <canvas ref={canvasRef} className="w-full h-auto max-w-full" />
+      </div>
     </div>
   );
 }
