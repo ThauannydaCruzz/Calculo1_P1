@@ -33,6 +33,7 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
     if (!canvasRef.current) return;
 
     // Add a small delay to ensure DOM is fully rendered
+    let createdCanvas: FabricCanvas | null = null;
     const timer = setTimeout(() => {
       if (!canvasRef.current) return;
       
@@ -45,20 +46,26 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
 
       // Ensure canvas is fully initialized
       canvas.renderAll();
+      createdCanvas = canvas;
       setFabricCanvas(canvas);
     }, 100);
 
     return () => {
       clearTimeout(timer);
-      fabricCanvas?.dispose();
+      if (createdCanvas) {
+        createdCanvas.dispose();
+        createdCanvas = null;
+      }
     };
   }, [canvasSize]);
 
   useEffect(() => {
     if (!fabricCanvas || !expression) return;
 
-    // Ensure canvas is properly initialized and has context
-    if (!fabricCanvas.getContext() || !fabricCanvas.lowerCanvasEl) return;
+    // Ensure canvas element exists before drawing
+    if (!(fabricCanvas as any).lowerCanvasEl) return;
+
+    let drawTimer: number | undefined;
 
     try {
       // Clear canvas safely
@@ -69,8 +76,9 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
       drawCoordinateSystem(fabricCanvas);
 
       // Draw function based on type with animation
-      setTimeout(() => {
-        if (!fabricCanvas.getContext()) return; // Double check before drawing
+      drawTimer = window.setTimeout(() => {
+        // Double check canvas is still valid
+        if (!(fabricCanvas as any).lowerCanvasEl) return;
         
         switch (type) {
           case 'limit':
@@ -83,15 +91,18 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
             drawSinaisFunction(fabricCanvas, expression, point);
             break;
         }
-      }, 500); // Delay for animation effect
+        fabricCanvas.renderAll();
+      }, 500);
 
-      fabricCanvas.renderAll();
-
-      // Generate steps
+      // Generate steps (UI side)
       generateSteps(type, expression, point);
     } catch (error) {
       console.error('Canvas operation failed:', error);
     }
+
+    return () => {
+      if (drawTimer) window.clearTimeout(drawTimer);
+    };
   }, [fabricCanvas, expression, type, point]);
 
   const drawCoordinateSystem = (canvas: FabricCanvas) => {
