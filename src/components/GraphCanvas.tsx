@@ -32,49 +32,66 @@ export default function GraphCanvas({ expression, type, point, onGraphReady }: G
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    const canvas = new FabricCanvas(canvasRef.current, {
-      width: canvasSize.width,
-      height: canvasSize.height,
-      backgroundColor: '#000000',
-      selection: false,
-    });
+    // Add a small delay to ensure DOM is fully rendered
+    const timer = setTimeout(() => {
+      if (!canvasRef.current) return;
+      
+      const canvas = new FabricCanvas(canvasRef.current, {
+        width: canvasSize.width,
+        height: canvasSize.height,
+        backgroundColor: '#000000',
+        selection: false,
+      });
 
-    setFabricCanvas(canvas);
+      // Ensure canvas is fully initialized
+      canvas.renderAll();
+      setFabricCanvas(canvas);
+    }, 100);
 
     return () => {
-      canvas.dispose();
+      clearTimeout(timer);
+      fabricCanvas?.dispose();
     };
   }, [canvasSize]);
 
   useEffect(() => {
     if (!fabricCanvas || !expression) return;
 
-    // Clear canvas
-    fabricCanvas.clear();
-    fabricCanvas.backgroundColor = '#000000';
+    // Ensure canvas is properly initialized and has context
+    if (!fabricCanvas.getContext() || !fabricCanvas.lowerCanvasEl) return;
 
-    // Draw coordinate system
-    drawCoordinateSystem(fabricCanvas);
+    try {
+      // Clear canvas safely
+      fabricCanvas.clear();
+      fabricCanvas.backgroundColor = '#000000';
 
-    // Draw function based on type with animation
-    setTimeout(() => {
-      switch (type) {
-        case 'limit':
-          drawLimitFunction(fabricCanvas, expression, point);
-          break;
-        case 'continuity':
-          drawContinuityFunction(fabricCanvas, expression, point);
-          break;
-        case 'sinais':
-          drawSinaisFunction(fabricCanvas, expression, point);
-          break;
-      }
-    }, 500); // Delay for animation effect
+      // Draw coordinate system
+      drawCoordinateSystem(fabricCanvas);
 
-    fabricCanvas.renderAll();
+      // Draw function based on type with animation
+      setTimeout(() => {
+        if (!fabricCanvas.getContext()) return; // Double check before drawing
+        
+        switch (type) {
+          case 'limit':
+            drawLimitFunction(fabricCanvas, expression, point);
+            break;
+          case 'continuity':
+            drawContinuityFunction(fabricCanvas, expression, point);
+            break;
+          case 'sinais':
+            drawSinaisFunction(fabricCanvas, expression, point);
+            break;
+        }
+      }, 500); // Delay for animation effect
 
-    // Generate steps
-    generateSteps(type, expression, point);
+      fabricCanvas.renderAll();
+
+      // Generate steps
+      generateSteps(type, expression, point);
+    } catch (error) {
+      console.error('Canvas operation failed:', error);
+    }
   }, [fabricCanvas, expression, type, point]);
 
   const drawCoordinateSystem = (canvas: FabricCanvas) => {
