@@ -63,6 +63,17 @@ git clone [https://github.com/ThauannydaCruzz/Calculo1_P1.git](https://github.co
 # 2. Navegue até o diretório do projeto
 cd Calculo1_P1
 
+---
+
+## 👥 Autores
+
+Este projeto foi desenvolvido com carinho por:
+
+-   Ana Julia Romera
+-   Gabriela Akemi
+-   Sophia Mattos
+-   Thauanny da Cruz
+
 # 3. Instale as dependências necessárias
 npm i
 
