@@ -21,8 +21,6 @@ Este projeto é uma **Calculadora de Limites** desenvolvida para a disciplina de
 
 A aplicação permite ao usuário inserir uma função `f(x)`, um ponto de análise e visualizar a solução detalhada do limite, com todos os passos da resolução, além de apresentar o gráfico da função para uma melhor compreensão visual.
 
-![Demonstração da Calculadora de Limites](link_para_sua_imagem_ou_gif_aqui.png)
-*(Dica: Grave um GIF da tela ou tire um print e substitua o link acima para mostrar seu projeto!)*
 
 ---
 
