@@ -56,7 +56,6 @@ Antes de começar, você vai precisar ter instalado em sua máquina o [Node.js](
 
 ### Rodando o Projeto
 
-```bash
 # 1. Clone o repositório
 git clone [https://github.com/ThauannydaCruzz/Calculo1_P1.git](https://github.com/ThauannydaCruzz/Calculo1_P1.git)
 
